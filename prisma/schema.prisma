@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role{
+  USER
+  ADMIN
+}
+
+enum Status{
+  CANCELLED
+  PENDING
+  HELD
+  COMPLETED
+}
+
+model Currency{
+  id Int @id @default(autoincrement())
+  currency String @unique
+  rate Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addedBy User[]
+
+  currencyUpdates CurrencyUpdate[]
+}
+
+model CurrencyUpdate{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  currentRate Float
+  previousRate Float
+
+  currencyId Int
+  currency Currency @relation(fields: [currencyId], references: [id])
+  
+  updatedBy User[]
+}
+
+model Order{
+  id Int @id @default(autoincrement())
+  account String
+  product String
+  currency String
+  rate Float
+  amount Float
+  rmbEquivalence Float
+  recipient String
+  qrCode String
+  status Status
+
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+
+  orderBilling OrderBilling?
+}
+
+model OrderBilling{
+  id Int @id @default(autoincrement())
+  name String
+  whatsapp String
+  email String
+  momoNumber String
+  notes String
+
+  orderId Int @unique
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model User{
+  id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email String @unique
+
+  name String
+  password String
+
+  role Role
+
+  currencyUpdates CurrencyUpdate[]
+  currencies Currency[]
+  orders Order[]
+}
