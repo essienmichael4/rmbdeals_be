@@ -17,7 +17,7 @@ export const createOrderForUnknownUser = (account:string, amount:number, rate:nu
             currency,
             qrCode: qrcode,
             status: Status.HELD,
-            userId: 2
+            userId: 1
         }
     })
 }
@@ -42,7 +42,7 @@ export const createOrderForUser = (account:string, amount:number, rate:number, r
     })
 }
 
-export const fetchUserOrder = (id:number, userId?:number)=>{
+export const fetchUserOrderforCheckout = (id:number, userId?:number)=>{
     return prisma.order.findUnique({where:{
         id,
         userId
@@ -93,4 +93,22 @@ export const checkoutLoginOrderUpdate = (id:number, userId:number) => {
     },data : {
         userId
     }})
+}
+
+export const fetchUserOrder = (id:number, userId:number) => {
+    return prisma.order.findUnique({
+        where: {
+            id, userId
+        }
+    })
+}
+
+export const fetchUserOrders = ( userId:number) => {
+    return prisma.order.findMany({
+        where: {
+            userId
+        },include:{
+            orderBilling: true
+        }
+    })
 }

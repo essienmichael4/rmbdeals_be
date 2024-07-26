@@ -53,6 +53,9 @@ model CurrencyUpdate{
 
 model Order{
   id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   account String
   product String
   currency String
@@ -71,6 +74,9 @@ model Order{
 
 model OrderBilling{
   id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
   name String
   whatsapp String
   email String

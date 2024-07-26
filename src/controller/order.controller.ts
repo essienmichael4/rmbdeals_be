@@ -1,12 +1,10 @@
 import { Request, Response } from "express";
 import bcrypt from 'bcrypt'
-import * as jwt from 'jsonwebtoken'
 import { AuthRequest } from "../types/authRequest.type";
 import { Role } from "@prisma/client";
 import { generateJWT } from "../service/helpers";
 import { getCurrency } from "../service/currency.service";
-import { addOrderBilling, addOrderBillingNonUser, checkoutLoginOrderUpdate, createOrderForUnknownUser, createOrderForUser, fetchUserOrder } from "../service/order.service";
-import log from "../utils/logger";
+import { addOrderBilling, addOrderBillingNonUser, checkoutLoginOrderUpdate, createOrderForUnknownUser, createOrderForUser, fetchUserOrder, fetchUserOrderforCheckout, fetchUserOrders } from "../service/order.service";
 import { createNewUser, findUserByEmail } from "../Service/user.service";
 
 /**
@@ -68,7 +66,7 @@ export const getNonUserOrderForCheckout = async (req:Request, res:Response)=>{
     try{
         const {id} = req.params
 
-        const order = await fetchUserOrder(Number(id))
+        const order = await fetchUserOrderforCheckout(Number(id))
         delete (order as any).userId
         delete (order as any).qrCode
         delete (order as any).status
@@ -90,7 +88,7 @@ export const getUserOrderForCheckout = async (req:AuthRequest, res:Response)=>{
         const {id} = req.params
         const user = req.tokenAccount
 
-        const order = await fetchUserOrder(Number(id), user?.dub.id)
+        const order = await fetchUserOrderforCheckout(Number(id), user?.dub.id)
         delete (order as any).userId
         delete (order as any).qrCode
         delete (order as any).status
@@ -113,7 +111,7 @@ export const checkoutUserOrder = async (req:AuthRequest, res:Response)=>{
         const {email, momoNumber, whatsapp, name, notes} = req.body
         const user = req.tokenAccount
 
-        const order = await addOrderBilling(Number(id),name,email,whatsapp, momoNumber, notes)
+        const order = await addOrderBilling(Number(id),name,email,whatsapp, momoNumber, notes, user?.dub.id)
 
         res.send({order, message:"Order placed successfully"})
     }catch(err:any){
@@ -176,7 +174,7 @@ export const checkoutNonUserOrder = async (req:Request, res:Response)=>{
  * 
  * @param req Request Object
  * @param res Response Object
- * @returns Object containing a Users order
+ * @returns Object containing a Users information and tokens for authentication and authorization 
  */
 export const checkoutLogin = async (req:Request, res:Response)=>{
     try{
@@ -197,7 +195,7 @@ export const checkoutLogin = async (req:Request, res:Response)=>{
         delete (user as any).password
 
         const order = await checkoutLoginOrderUpdate(Number(id), user.id)
-        
+
         res.send({
             user,
             backendTokens: {
@@ -212,5 +210,41 @@ export const checkoutLogin = async (req:Request, res:Response)=>{
         }else{
             res.status(400).json(err)
         }
+    }
+}
+
+/**
+ * 
+ * @param req Request Object
+ * @param res Response Object
+ * @returns List containing a Users orders
+ */
+export const getUserOrders = async (req:AuthRequest, res:Response) => {
+    try{
+        const user = req.tokenAccount
+        const orders = await fetchUserOrders(user?.dub.id as number)
+    
+        res.send(orders)
+    }catch(err:any){
+        res.status(400).json(err)
+    }
+}
+
+/**
+ * 
+ * @param req Request Object
+ * @param res Response Object
+ * @returns Object containing a Users order
+ */
+export const getUserOrder = async (req:AuthRequest, res:Response) => {
+    try{
+        const {id} = req.params
+        const user = req.tokenAccount
+
+        const order = await fetchUserOrder(Number(id), user?.dub.id as number)
+    
+        res.send(order)
+    }catch(err:any){
+        res.status(400).json(err)
     }
 }

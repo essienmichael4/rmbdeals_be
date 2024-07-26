@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from 'multer'
-import { checkoutLogin, checkoutNonUserOrder, checkoutUserOrder, createOrder, createUnkownOrder, getNonUserOrderForCheckout, getUserOrderForCheckout } from "../controller/order.controller";
+import { checkoutLogin, checkoutNonUserOrder, checkoutUserOrder, createOrder, createUnkownOrder, getNonUserOrderForCheckout, getUserOrder, getUserOrderForCheckout, getUserOrders } from "../controller/order.controller";
 import path from "path";
 import { authenticateToken } from "../middleware/authToken.middleware";
 
@@ -21,7 +21,9 @@ router.post("/orders", authenticateToken, upload.single('qrcode'), createOrder)
 router.post("/orders/checkout/login/:id", checkoutLogin)
 router.post("/orders/checkout/:id", authenticateToken, checkoutUserOrder)
 router.post("/orders/checkout-register/:id", checkoutNonUserOrder)
-router.get("/orders/:id", authenticateToken, getUserOrderForCheckout)
-router.get("/orders/nonuser/:id", getNonUserOrderForCheckout)
+router.get("/orders/checkout/info/:id", authenticateToken, getUserOrderForCheckout)
+router.get("/orders/checkout/info/nonuser/:id", getNonUserOrderForCheckout)
+router.get("/orders", authenticateToken, getUserOrders)
+router.get("/orders/:id", authenticateToken, getUserOrder)
 
 export default router

@@ -1,9 +1,11 @@
 import { Router } from "express";
-// import { createUser} from "../controller/user.controller";
-// import { authenticateToken } from "../middlewares/authToken.middleware";
+import { authenticateToken } from "../middleware/authToken.middleware";
+import { updateUserInfo, updateUserPassword } from "../controller/user.controller";
 
 const router = Router()
 
-// router.post("/user", createUser)
+router.post("/users/account", authenticateToken, )
+router.put("/users/account", authenticateToken, updateUserInfo)
+router.put("/users/password", authenticateToken, updateUserPassword)
 
 export default router
