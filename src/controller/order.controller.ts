@@ -23,9 +23,9 @@ export const createOrder = async (req:AuthRequest, res:Response)=>{
             return res.status(404).json({error: "The transacted currency was not found"})
         }
 
-        const order = await createOrderForUser(data.account, data.amount,currencyInfo.rate, data.recipient, data.currency, `uploads/${req.file?.filename}`, user!.dub.id) 
-        delete (order as any).userId
-       res.send({order, message: "Order saved successfully"})
+        const result = await createOrderForUser(data.account, data.amount,currencyInfo.rate, data.recipient, data.currency, `uploads/${req.file?.filename}`, user!.dub.id) 
+        const order = result[0]
+        res.send({order, message: "Order saved successfully"})
 
     }catch(err:any){
         res.status(400).json(err)
@@ -151,7 +151,8 @@ export const checkoutNonUserOrder = async (req:Request, res:Response)=>{
         delete (user as any).currencies
         delete (user as any).currencyUpdates
 
-        const order = await addOrderBillingNonUser(Number(id),name,email,whatsapp, momoNumber, notes, user.id)
+        const savedOrder = await fetchUserOrderforCheckout(Number(id))
+        const order = await addOrderBillingNonUser(Number(id),name,email,whatsapp, momoNumber, user.id, savedOrder!.amount, notes )
 
         res.send({
             order, message:"Order placed successfully",
@@ -194,7 +195,8 @@ export const checkoutLogin = async (req:Request, res:Response)=>{
 
         delete (user as any).password
 
-        const order = await checkoutLoginOrderUpdate(Number(id), user.id)
+        const savedOrder = await fetchUserOrderforCheckout(Number(id))
+        const order = await checkoutLoginOrderUpdate(Number(id), user.id, savedOrder!.amount)
 
         res.send({
             user,

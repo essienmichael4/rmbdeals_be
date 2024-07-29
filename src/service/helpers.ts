@@ -11,3 +11,17 @@ export const generateJWT = (email:string, id:number, name:string, time: string) 
 
     return jwt.sign(payload, process.env.JWT_SECRET_KEY as string, {expiresIn: time})
 }
+
+export function DateToUTCDate(date:Date){
+    return new Date(
+        Date.UTC(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            date.getHours(),
+            date.getMinutes(),
+            date.getSeconds(),
+            date.getMilliseconds()
+        )
+    )
+}

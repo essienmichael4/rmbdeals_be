@@ -29,6 +29,7 @@ model Currency{
   id Int @id @default(autoincrement())
   currency String @unique
   rate Float
+  label String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -76,7 +77,7 @@ model OrderBilling{
   id Int @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   name String
   whatsapp String
   email String
@@ -102,4 +103,25 @@ model User{
   currencyUpdates CurrencyUpdate[]
   currencies Currency[]
   orders Order[]
+}
+
+model MonthHistory{
+  userId Int
+  day Int
+  month Int
+  year Int
+  orders Int
+  expense Float
+
+  @@id([day, month, year, userId])
+}
+
+model YearHistory{
+  userId Int
+  month Int
+  year Int
+  orders Int
+  expense Float
+
+  @@id([month, year,userId])
 }
