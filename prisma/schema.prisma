@@ -30,6 +30,7 @@ model Currency{
   currency String @unique
   rate Float
   label String
+  description String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,7 +98,7 @@ model User{
 
   name String
   password String
-
+  currency String @default("GHS")
   role Role
 
   currencyUpdates CurrencyUpdate[]
