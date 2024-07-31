@@ -29,9 +29,7 @@ export const getCurrencies = async (req:Request, res:Response)=>{
 export const getCurrency = async (req:Request, res:Response)=>{
     try{
         const currency = await getSingleCurrency()
-
         res.send(currency)
-
     }catch(err:any){
         res.status(400).json(err)
     }
@@ -46,11 +44,9 @@ export const getCurrency = async (req:Request, res:Response)=>{
 export const getUserCurrency = async (req:AuthRequest, res:Response)=>{
     try{
         const user = req.tokenAccount
-        console.log(user);
         
         const userCurrency = await findUserById(user?.dub.id as number)
         const currency = await getCurrencyForUser(userCurrency?.currency as string)
-        console.log(currency)
         res.send(currency)
 
     }catch(err:any){

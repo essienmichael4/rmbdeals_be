@@ -244,15 +244,18 @@ export const checkoutLoginOrderUpdate = (id:number, userId:number, amount:number
     ])
 }
 
-export const fetchUserOrder = (id:number, userId:number) => {
+export const fetchUserOrder = (id:number, userId?:number) => {
     return prisma.order.findUnique({
         where: {
             id, userId
+        },
+        include: {
+            orderBilling:true
         }
     })
 }
 
-export const fetchUserOrders = ( userId:number) => {
+export const fetchUserOrders = ( userId?:number) => {
     return prisma.order.findMany({
         where: {
             userId
@@ -262,7 +265,7 @@ export const fetchUserOrders = ( userId:number) => {
     })
 }
 
-export const fetchUserRecentOrders = ( userId:number) => {
+export const fetchUserRecentOrders = ( userId?:number) => {
     return prisma.order.findMany({
         where: {
             userId

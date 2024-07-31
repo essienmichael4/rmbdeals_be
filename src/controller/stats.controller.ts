@@ -8,7 +8,20 @@ export const getStatistics = async (req:AuthRequest, res:Response) => {
         const user = req.tokenAccount
         const { from, to} =  req.query
 
-        const result = await getUserStatistics(user?.dub.id as number, new Date(from as string), new Date(to as string))
+        const result = await getUserStatistics(new Date(from as string), new Date(to as string), user?.dub.id as number)
+
+        res.send(result)
+    }catch(err){
+        res.status(400).json(err)
+    }
+}
+
+export const getAdminStatistics = async (req:AuthRequest, res:Response) => {
+    try{
+        const user = req.tokenAccount
+        const { from, to} =  req.query
+
+        const result = await getUserStatistics( new Date(from as string), new Date(to as string))
 
         res.send(result)
     }catch(err){
@@ -35,6 +48,25 @@ export const getHistory = async (req:AuthRequest, res:Response) => {
     }
 }
 
+export const getAdminHistory = async (req:AuthRequest, res:Response) => {
+    try{
+        const { year, month} =  req.query
+        const user = req.tokenAccount
+        const timeframe:"MONTH" | "YEAR" = req.query.timeframe as "MONTH" | "YEAR"        
+    
+        if(Number(month) < 0 || Number(month) > 11){
+            return res.status(400).json({message: "Month should be a valid month"})
+        }
+    
+        const result = await getHistoryData(timeframe, Number(month), Number(year))
+    
+        res.send(result)
+    }catch(err){
+        console.log(err)
+        res.status(400).json(err)
+    }
+}
+
 export const getHistoryPeriods = async (req:Request, res:Response) => {
     try{
         const periods = await getPeriods() 
@@ -49,6 +81,17 @@ export const getRecentOrders = async (req:AuthRequest, res:Response) => {
     try{
         const user = req.tokenAccount
         const result = await fetchUserRecentOrders(user?.dub.id as number)
+    
+        res.send(result)
+    }catch(err){
+        res.status(400).json(err)
+    }
+}
+
+export const getAdminRecentOrders = async (req:AuthRequest, res:Response) => {
+    try{
+        const user = req.tokenAccount
+        const result = await fetchUserRecentOrders()
     
         res.send(result)
     }catch(err){

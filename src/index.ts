@@ -17,6 +17,7 @@ dotenv.config()
 
 app.use(express.json())
 app.use(cors())
+app.use(express.static("uploads"))
 app.use("/api/v1", authRoute)
 app.use("/api/v1", orderRoute)
 app.use("/api/v1", userRoute)

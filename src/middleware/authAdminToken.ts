@@ -33,7 +33,7 @@ export async function authenticateAdminToken(req:AuthRequest, res:Response, next
         req.tokenAccount = payload
         next()
     }catch(e){
-        return res.sendStatus(401).json({message: "Unauthorized"})
+        return res.sendStatus(403).json({message: "Unauthorized"})
     }
 }
 

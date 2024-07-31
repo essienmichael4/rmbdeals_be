@@ -11,7 +11,7 @@ type HistoryData = {
     day?: number
 }
 
-export const totalOrders = async (userId?:number, from?:Date, to?: Date)=>{
+export const totalOrders = async (from?:Date, to?: Date, userId?:number)=>{
     return prisma.order.count({
         where: {
             userId,
@@ -23,7 +23,7 @@ export const totalOrders = async (userId?:number, from?:Date, to?: Date)=>{
     })
 }
 
-export const successfulOrders = async (userId?:number, from?:Date, to?: Date) => {
+export const successfulOrders = async (from?:Date, to?: Date, userId?:number) => {
     return prisma.order.count({
         where: {
             userId,
@@ -36,7 +36,7 @@ export const successfulOrders = async (userId?:number, from?:Date, to?: Date) =>
     })
 }
 
-export const heldOrders = (userId?:number, from?:Date, to?: Date)=>{
+export const heldOrders = (from?:Date, to?: Date, userId?:number)=>{
     return prisma.order.count({
         where: {
             userId,
@@ -51,7 +51,7 @@ export const heldOrders = (userId?:number, from?:Date, to?: Date)=>{
     })
 }
 
-export const projectedExpense = (userId?:number, from?:Date, to?: Date)=>{
+export const projectedExpense = (from?:Date, to?: Date, userId?:number)=>{
     return prisma.order.aggregate({
         where: {
             userId,
@@ -64,7 +64,7 @@ export const projectedExpense = (userId?:number, from?:Date, to?: Date)=>{
     })
 }
 
-export const successfulExpense = (userId?:number, from?:Date, to?: Date)=>{
+export const successfulExpense = (from?:Date, to?: Date, userId?:number)=>{
     return prisma.order.aggregate({
         where: {
             userId,
@@ -78,7 +78,7 @@ export const successfulExpense = (userId?:number, from?:Date, to?: Date)=>{
     })
 }
 
-export const heldExpense = (userId?:number, from?:Date, to?: Date)=>{
+export const heldExpense = (from?:Date, to?: Date, userId?:number)=>{
     return prisma.order.aggregate({
         where: {
             userId,
@@ -92,13 +92,13 @@ export const heldExpense = (userId?:number, from?:Date, to?: Date)=>{
     })
 }
 
-export const getUserStatistics = async (userId:number, from?:Date, to?: Date) => {
-    const totalOrder = await totalOrders(userId, from, to) 
-    const successfulOrder = await successfulOrders(userId, from, to) 
-    const heldOrder = await heldOrders(userId, from, to) 
-    const projectedEx = await projectedExpense(userId, from, to) 
-    const successfulEx = await successfulExpense(userId, from, to) 
-    const heldEx = await heldExpense(userId, from, to) 
+export const getUserStatistics = async ( from?:Date, to?: Date, userId?:number) => {
+    const totalOrder = await totalOrders(from, to, userId) 
+    const successfulOrder = await successfulOrders(from, to, userId) 
+    const heldOrder = await heldOrders(from, to, userId) 
+    const projectedEx = await projectedExpense(from, to, userId) 
+    const successfulEx = await successfulExpense(from, to, userId) 
+    const heldEx = await heldExpense(from, to, userId) 
 
     return {
         totalOrders:totalOrder,

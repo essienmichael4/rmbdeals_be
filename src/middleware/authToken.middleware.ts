@@ -29,7 +29,7 @@ export async function authenticateToken(req:AuthRequest, res:Response, next:Next
         req.tokenAccount = payload
         next()
     }catch(e){
-        return res.sendStatus(401).json({message: "Unauthorized"})
+        return res.sendStatus(403).json({message: "Unauthorized"})
     }
 }
 

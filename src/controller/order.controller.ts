@@ -23,7 +23,7 @@ export const createOrder = async (req:AuthRequest, res:Response)=>{
             return res.status(404).json({error: "The transacted currency was not found"})
         }
 
-        const result = await createOrderForUser(data.account, data.amount,currencyInfo.rate, data.recipient, data.currency, `uploads/${req.file?.filename}`, user!.dub.id) 
+        const result = await createOrderForUser(data.account, data.amount,currencyInfo.rate, data.recipient, data.currency, `${req.file?.filename}`, user!.dub.id) 
         const order = result[0]
         res.send({order, message: "Order saved successfully"})
 
@@ -227,6 +227,42 @@ export const getUserOrders = async (req:AuthRequest, res:Response) => {
         const orders = await fetchUserOrders(user?.dub.id as number)
     
         res.send(orders)
+    }catch(err:any){
+        res.status(400).json(err)
+    }
+}
+
+/**
+ * 
+ * @param req Request Object
+ * @param res Response Object
+ * @returns List containing a Users orders
+ */
+export const getOrders = async (req:AuthRequest, res:Response) => {
+    try{
+        const user = req.tokenAccount
+        const orders = await fetchUserOrders()
+    
+        res.send(orders)
+    }catch(err:any){
+        res.status(400).json(err)
+    }
+}
+
+/**
+ * 
+ * @param req Request Object
+ * @param res Response Object
+ * @returns Object containing a Users order
+ */
+export const getOrderForAdmin = async (req:AuthRequest, res:Response) => {
+    try{
+        const {id} = req.params
+        const user = req.tokenAccount
+
+        const order = await fetchUserOrder(Number(id))
+    
+        res.send(order)
     }catch(err:any){
         res.status(400).json(err)
     }

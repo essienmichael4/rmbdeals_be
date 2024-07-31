@@ -97,8 +97,9 @@ export const refreshToken = async (req:AuthRequest, res:Response)=>{
         }
 
         res.send({
+            // user: tokenAccount,
             accessToken: generateJWT(tokenAccount!.username, tokenAccount!.dub.id, tokenAccount!.dub.name, '1h'),
-            refreshToken: generateJWT(tokenAccount!.username, tokenAccount!.dub.id, tokenAccount!.dub.name, '7d')
+            // refreshToken: generateJWT(tokenAccount!.username, tokenAccount!.dub.id, tokenAccount!.dub.name, '7d')
         })
     }catch(err:any){
         res.status(400).json(err)
