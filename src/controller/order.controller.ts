@@ -4,7 +4,7 @@ import { AuthRequest } from "../types/authRequest.type";
 import { Role } from "@prisma/client";
 import { generateJWT } from "../service/helpers";
 import { getCurrency } from "../service/currency.service";
-import { addOrderBilling, addOrderBillingNonUser, checkoutLoginOrderUpdate, createOrderForUnknownUser, createOrderForUser, fetchUserOrder, fetchUserOrderforCheckout, fetchUserOrders } from "../service/order.service";
+import { addOrderBilling, addOrderBillingNonUser, checkoutLoginOrderUpdate, createOrderForUnknownUser, createOrderForUser, fetchOrdersRevenue, fetchUserOrder, fetchUserOrderforCheckout, fetchUserOrders, updateUserOrder } from "../service/order.service";
 import { createNewUser, findUserByEmail } from "../Service/user.service";
 
 /**
@@ -283,6 +283,48 @@ export const getUserOrder = async (req:AuthRequest, res:Response) => {
     
         res.send(order)
     }catch(err:any){
+        res.status(400).json(err)
+    }
+}
+
+/**
+ * 
+ * @param req Request Object
+ * @param res Response Object
+ * @returns Object containing a Users order
+ */
+export const updateOrder = async (req:AuthRequest, res:Response) => {
+    try{
+        const {id} = req.params
+        const user = req.tokenAccount
+        const {status} = req.body
+
+        const order = await updateUserOrder(Number(id), status)
+    
+        res.send(order)
+    }catch(err:any){
+        res.status(400).json(err)
+    }
+}
+
+
+/**
+ * 
+ * @param req Request Object
+ * @param res Response Object
+ * @returns List containing a Users orders
+ */
+export const getOrdersRevenue = async (req:AuthRequest, res:Response) => {
+    try{
+        const user = req.tokenAccount
+        const { from, to} =  req.query
+    
+        const revenue = await fetchOrdersRevenue(new Date(from as string), new Date(to as string))
+
+        res.send(revenue)
+    }catch(err:any){
+        console.log(err);
+        
         res.status(400).json(err)
     }
 }

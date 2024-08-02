@@ -1,4 +1,5 @@
 import { PrismaClient, Status } from '@prisma/client'
+import { DateToUTCDate } from './helpers'
 const prisma = new PrismaClient()
 
 export const createOrderForUnknownUser = (account:string, amount:number, rate:number, recipient:string, currency:string, qrcode:string) => {
@@ -261,7 +262,10 @@ export const fetchUserOrders = ( userId?:number) => {
             userId
         },include:{
             orderBilling: true
-        }
+        },
+        orderBy:{
+            id: "desc"
+        },
     })
 }
 
@@ -280,3 +284,48 @@ export const fetchUserRecentOrders = ( userId?:number) => {
 }
 
 
+export const updateUserOrder = ( id:number, status:Status) => {
+    return prisma.order.update({
+        where: {id},
+        data: {
+            status
+        }
+    })
+}
+
+const completedRevenue = (from?:Date, to?: Date)=>{
+    return prisma.order.groupBy({
+        by: 'currency',
+        where: {
+            createdAt:{
+                lte: to && DateToUTCDate(new Date(to)),
+                gte: from && DateToUTCDate(new Date(from))
+            },
+            status: "COMPLETED"
+        },
+        _sum: {amount:true}
+    })
+}
+
+const heldRevenue = (from?:Date, to?: Date)=>{
+    return prisma.order.groupBy({
+        by: 'currency',
+        where: {
+            createdAt:{
+                lte: to && DateToUTCDate(new Date(to)),
+                gte: from && DateToUTCDate(new Date(from))
+            },
+            status: {
+                in: ["CANCELLED", "HELD", "PENDING"]
+            }
+        },
+        _sum: {amount:true}
+    })
+}
+
+export const fetchOrdersRevenue = async (from?:Date, to?: Date) => {
+    return {
+        completedRevenue: await completedRevenue(from, to),
+        heldRevenue: await heldRevenue(from, to)
+    }
+}

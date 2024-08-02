@@ -51,6 +51,34 @@ export const heldOrders = (from?:Date, to?: Date, userId?:number)=>{
     })
 }
 
+export const heldOrdersAdmin = (from?:Date, to?: Date, userId?:number)=>{
+    return prisma.order.count({
+        where: {
+            userId,
+            status: {
+                in: ["HELD", "PENDING"]
+            },
+            createdAt:{
+                lte: to && DateToUTCDate(new Date(to)),
+                gte: from && DateToUTCDate(new Date(from))
+            },
+        },
+    })
+}
+
+export const cancelledOrdersAdmin = (from?:Date, to?: Date, userId?:number)=>{
+    return prisma.order.count({
+        where: {
+            userId,
+            status: "CANCELLED",
+            createdAt:{
+                lte: to && DateToUTCDate(new Date(to)),
+                gte: from && DateToUTCDate(new Date(from))
+            },
+        },
+    })
+}
+
 export const projectedExpense = (from?:Date, to?: Date, userId?:number)=>{
     return prisma.order.aggregate({
         where: {
@@ -95,7 +123,8 @@ export const heldExpense = (from?:Date, to?: Date, userId?:number)=>{
 export const getUserStatistics = async ( from?:Date, to?: Date, userId?:number) => {
     const totalOrder = await totalOrders(from, to, userId) 
     const successfulOrder = await successfulOrders(from, to, userId) 
-    const heldOrder = await heldOrders(from, to, userId) 
+    const heldOrder = await heldOrdersAdmin(from, to, userId) 
+    const cancelledOrder = await cancelledOrdersAdmin(from, to, userId) 
     const projectedEx = await projectedExpense(from, to, userId) 
     const successfulEx = await successfulExpense(from, to, userId) 
     const heldEx = await heldExpense(from, to, userId) 
@@ -104,6 +133,7 @@ export const getUserStatistics = async ( from?:Date, to?: Date, userId?:number) 
         totalOrders:totalOrder,
         successfulOrders: successfulOrder,
         heldOrders: heldOrder,
+        cancelledOrders: cancelledOrder,
         projectedExpense: projectedEx,
         successfulExpense: successfulEx,
         heldExpense: heldEx
