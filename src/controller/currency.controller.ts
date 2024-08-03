@@ -50,7 +50,6 @@ export const getUserCurrency = async (req:AuthRequest, res:Response)=>{
         res.send(currency)
 
     }catch(err:any){
-        console.log(err)
         res.status(400).json(err)
     }
 }
@@ -70,7 +69,6 @@ export const addCurrency = async (req:AuthRequest, res:Response)=>{
         res.send(newCurrency)
 
     }catch(err:any){
-        console.log(err)
         res.status(400).json(err)
     }
 }
@@ -92,7 +90,6 @@ export const updateCurrency = async (req:AuthRequest, res:Response)=>{
         res.send(updatedCurrency)
 
     }catch(err:any){
-        console.log(err)
         res.status(400).json(err)
     }
 }

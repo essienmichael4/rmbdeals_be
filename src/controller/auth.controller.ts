@@ -1,10 +1,18 @@
 import { Request, Response } from "express";
+import nodemailer from 'nodemailer';
 import { createNewUser, findUserByEmail } from "../Service/user.service";
 import bcrypt from 'bcrypt'
-import * as jwt from 'jsonwebtoken'
 import { AuthRequest } from "../types/authRequest.type";
 import { Role } from "@prisma/client";
 import { generateJWT } from "../service/helpers";
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_SENDER,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+});
 
 /**
  * 
@@ -97,10 +105,61 @@ export const refreshToken = async (req:AuthRequest, res:Response)=>{
         }
 
         res.send({
-            // user: tokenAccount,
             accessToken: generateJWT(tokenAccount!.username, tokenAccount!.dub.id, tokenAccount!.dub.name, '1h'),
-            // refreshToken: generateJWT(tokenAccount!.username, tokenAccount!.dub.id, tokenAccount!.dub.name, '7d')
         })
+    }catch(err:any){
+        res.status(400).json(err)
+    }
+}
+
+/**
+ * 
+ * @param req Request Object
+ * @param res Response Object
+ * @returns Object containing a User and JWT tokens
+ */
+export const createAdmin = async (req:Request, res:Response)=>{
+    try{
+        const {name, email} = req.body
+        const password:string = process.env.PASSWORD as string
+        const role:Role = process.env.ADMINROLE as Role
+
+        const userExist = await findUserByEmail(email)
+        if(userExist){
+            return res.status(401).json({error: "Email already exist."})
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+
+        const user = await createNewUser(name, email, role, hashedPassword) 
+        delete (user as any).password
+        delete (user as any).orders
+        delete (user as any).currencies
+        delete (user as any).currencyUpdates
+
+        res.send(user)
+
+        const link = "http://localhost:5000/rmbdeals/passwordreset?id=${}"
+
+        const { to, subject, text } = {
+            to: email,
+            subject: "Password Reset",
+            text: `
+                Please reset your password to access your account using the link below.
+                Link expires in 30 minutes.
+
+                ${link}
+            `
+        }
+
+        // const mailOptions = {
+        //     from: process.env.EMAIL_SENDER,
+        //     to,
+        //     subject,
+        //     text,
+        // };
+
+        // await transporter.sendMail(mailOptions);
     }catch(err:any){
         res.status(400).json(err)
     }

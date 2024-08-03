@@ -145,13 +145,13 @@ export const checkoutNonUserOrder = async (req:Request, res:Response)=>{
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const user = await createNewUser(name, email, role, hashedPassword) 
+        const savedOrder = await fetchUserOrderforCheckout(Number(id))
+        const user = await createNewUser(name, email, role, hashedPassword, savedOrder?.currency) 
         delete (user as any).password
         delete (user as any).orders
         delete (user as any).currencies
         delete (user as any).currencyUpdates
 
-        const savedOrder = await fetchUserOrderforCheckout(Number(id))
         const order = await addOrderBillingNonUser(Number(id),name,email,whatsapp, momoNumber, user.id, savedOrder!.amount, notes )
 
         res.send({

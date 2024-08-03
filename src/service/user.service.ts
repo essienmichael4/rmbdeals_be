@@ -1,13 +1,14 @@
 import { PrismaClient, Role } from '@prisma/client'
 const prisma = new PrismaClient()
 
-export const createNewUser = (name:string, email:string, role: Role, password:string,)=>{
+export const createNewUser = (name:string, email:string, role: Role, password:string, currency?:string)=>{
     return prisma.user.create({
         data: {
             name,
             email,
             role,
-            password
+            password,
+            currency
         }
     })
 }
