@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import nodemailer from 'nodemailer';
-import { createNewUser, findUserByEmail } from "../Service/user.service";
+import { createNewUser, findUser, findUserByEmail, updatePassword } from "../Service/user.service";
 import bcrypt from 'bcrypt'
 import { AuthRequest } from "../types/authRequest.type";
 import { Role } from "@prisma/client";
+import jwt from "jsonwebtoken"
 import { generateJWT } from "../service/helpers";
 
 const transporter = nodemailer.createTransport({
@@ -139,7 +140,7 @@ export const createAdmin = async (req:Request, res:Response)=>{
 
         res.send(user)
 
-        const link = "http://localhost:5000/rmbdeals/passwordreset?id=${}"
+        const link = `http://localhost:5000/rmbdeals/password-reset?id=${generateJWT(user.email, user.id, user.name, '30m')}&email=${user.email}`
 
         const { to, subject, text } = {
             to: email,
@@ -160,6 +161,80 @@ export const createAdmin = async (req:Request, res:Response)=>{
         // };
 
         // await transporter.sendMail(mailOptions);
+    }catch(err:any){
+        res.status(400).json(err)
+    }
+}
+
+
+/**
+ * 
+ * @param req Request Object
+ * @param res Response Object
+ * @returns Object containing a User and JWT tokens
+ */
+export const forgotPassword = async (req:Request, res:Response)=>{
+    try{
+        const { email } = req.body
+
+        let user = await findUserByEmail(email)
+        if(!user){
+            return res.status(401).json({error: "An account with this email address does not exist."})
+        }
+
+        const link = `http://localhost:5000/rmbdeals/password-reset?id=${generateJWT(user.email, user.id, user.name, '30m')}&email=${user.email}`
+        const { to, subject, text } = {
+            to: user.email,
+            subject: "Password Reset",
+            text: `
+                Please reset your password to access your account using the link below.
+                Link expires in 30 minutes.
+
+                ${link}
+            `
+        }
+
+        // const mailOptions = {
+        //     from: process.env.EMAIL_SENDER,
+        //     to,
+        //     subject,
+        //     text,
+        // };
+
+        // await transporter.sendMail(mailOptions);
+
+        res.send({message: "Password reset request has been submittedd successfully. A link has been sent to the email account provided to reset your password."})
+    }catch(err:any){
+        res.status(400).json(err)
+    }
+}
+
+/**
+ * 
+ * @param req Request Object
+ * @param res Response Object
+ * @returns Object containing a User and JWT tokens
+ */
+export const resetPassword = async (req:Request, res:Response)=>{
+    try{
+        const { password, confirmPassword, token } = req.body
+
+        const payload = <jwt.JwtPayload>jwt.verify(token, process.env.JWT_SECRET_KEY as string)
+        
+        const user = await findUser(payload.dub.id, payload.username, payload.dub.name)
+        if(!user){
+            return res.status(401).json({error: "A user was not found with the token provided, Please reset your account and try again"})
+        }
+
+        if(password !== confirmPassword){
+            return res.status(401).json({error: "Passwords do not match."})
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+
+        const updatedUser = await updatePassword(user.id, hashedPassword)
+
+        res.send({message: "Password has been updated successfully. Please login to continue..."})
     }catch(err:any){
         res.status(400).json(err)
     }

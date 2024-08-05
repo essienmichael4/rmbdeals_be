@@ -13,6 +13,10 @@ export const createNewUser = (name:string, email:string, role: Role, password:st
     })
 }
 
+export const findUser = (id:number, email:string, name:string) => {
+    return prisma.user.findUnique({where:{id, name, email}})
+}
+
 export const findUserById = (id:number)=>{
     return prisma.user.findUnique({where:{id}})
 }

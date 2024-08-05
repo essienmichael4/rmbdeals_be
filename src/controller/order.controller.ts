@@ -1,11 +1,20 @@
 import { Request, Response } from "express";
 import bcrypt from 'bcrypt'
+import nodemailer from 'nodemailer';
 import { AuthRequest } from "../types/authRequest.type";
 import { Role } from "@prisma/client";
 import { generateJWT } from "../service/helpers";
 import { getCurrency } from "../service/currency.service";
 import { addOrderBilling, addOrderBillingNonUser, checkoutLoginOrderUpdate, createOrderForUnknownUser, createOrderForUser, fetchOrdersRevenue, fetchUserOrder, fetchUserOrderforCheckout, fetchUserOrders, updateUserOrder } from "../service/order.service";
 import { createNewUser, findUserByEmail } from "../Service/user.service";
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_SENDER,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+});
 
 /**
  * 
@@ -114,6 +123,24 @@ export const checkoutUserOrder = async (req:AuthRequest, res:Response)=>{
         const order = await addOrderBilling(Number(id),name,email,whatsapp, momoNumber, notes, user?.dub.id)
 
         res.send({order, message:"Order placed successfully"})
+
+        const { to, subject, text } = {
+            to: email,
+            subject: "Password Reset",
+            text: `
+                Please reset your password to access your account using the link below.
+                Link expires in 30 minutes.
+            `
+        }
+
+        // const mailOptions = {
+        //     from: process.env.EMAIL_SENDER,
+        //     to,
+        //     subject,
+        //     text,
+        // };
+
+        // await transporter.sendMail(mailOptions);
     }catch(err:any){
         if(err.meta.modelName === "Order"){
             res.status(404).json("No order record was found with the ID associated with this account")
@@ -162,6 +189,24 @@ export const checkoutNonUserOrder = async (req:Request, res:Response)=>{
                 refreshToken: generateJWT(user.email, user.id,user.name, '7d')
             }
         })
+
+        const { to, subject, text } = {
+            to: email,
+            subject: "Password Reset",
+            text: `
+                Please reset your password to access your account using the link below.
+                Link expires in 30 minutes.
+            `
+        }
+
+        // const mailOptions = {
+        //     from: process.env.EMAIL_SENDER,
+        //     to,
+        //     subject,
+        //     text,
+        // };
+
+        // await transporter.sendMail(mailOptions);
     }catch(err:any){
         if(err.meta.modelName === "Order"){
             res.status(404).json("No order record was found with the ID associated with this account")
