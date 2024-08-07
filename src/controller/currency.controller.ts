@@ -16,6 +16,7 @@ export const getCurrencies = async (req:Request, res:Response)=>{
         res.send(currencies)
 
     }catch(err:any){
+        console.log(err)
         res.status(400).json(err)
     }
 }
@@ -32,6 +33,7 @@ export const getCurrency = async (req:Request, res:Response)=>{
         res.send(currency)
     }catch(err:any){
         res.status(400).json(err)
+        console.log(err)
     }
 }
 
@@ -51,6 +53,7 @@ export const getUserCurrency = async (req:AuthRequest, res:Response)=>{
 
     }catch(err:any){
         res.status(400).json(err)
+        console.log(err)
     }
 }
 
@@ -70,6 +73,7 @@ export const addCurrency = async (req:AuthRequest, res:Response)=>{
 
     }catch(err:any){
         res.status(400).json(err)
+        console.log(err)
     }
 }
 
@@ -91,6 +95,7 @@ export const updateCurrency = async (req:AuthRequest, res:Response)=>{
 
     }catch(err:any){
         res.status(400).json(err)
+        console.log(err)
     }
 }
 
