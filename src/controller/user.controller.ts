@@ -1,7 +1,7 @@
 import { Response } from "express";
 import bcrypt from 'bcrypt'
 import { AuthRequest } from "../types/authRequest.type";
-import { findUserByEmail, findUserById, updatePassword, updateUserAccountInfo } from "../Service/user.service";
+import { findUserByEmail, findUserById, updateCurrency, updatePassword, updateUserAccountInfo } from "../Service/user.service";
 import { generateJWT } from "../service/helpers";
 
 /**
@@ -46,6 +46,23 @@ export const updateUserInfo = async (req:AuthRequest, res:Response)=>{
                 refreshToken: generateJWT(user.email, user.id,user.name, '7d')
             }
         })
+    }catch(err:any){
+        res.status(400).json(err)
+    }
+}
+
+/**
+ * 
+ * @param req Request Object
+ * @param res Response Object
+ * @returns Object containing a User and JWT tokens
+ */
+export const updateUserCurrency = async (req:AuthRequest, res:Response)=>{
+    try{
+        const userAccount = req.tokenAccount
+        const {currency} = req.body
+        const userCurrency = await updateCurrency(Number(userAccount?.dub.id), currency)
+        res.send({message: "Currency added successfully"})
     }catch(err:any){
         res.status(400).json(err)
     }

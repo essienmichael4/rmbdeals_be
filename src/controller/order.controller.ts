@@ -117,10 +117,10 @@ export const getUserOrderForCheckout = async (req:AuthRequest, res:Response)=>{
 export const checkoutUserOrder = async (req:AuthRequest, res:Response)=>{
     try{
         const {id} = req.params
-        const {email, momoNumber, whatsapp, name, notes} = req.body
+        const {email, momoName, whatsapp, name, notes} = req.body
         const user = req.tokenAccount
 
-        const order = await addOrderBilling(Number(id),name,email,whatsapp, momoNumber, notes, user?.dub.id)
+        const order = await addOrderBilling(Number(id),name,email,whatsapp, momoName, notes, user?.dub.id)
 
         res.send({order, message:"Order placed successfully"})
 
@@ -159,7 +159,7 @@ export const checkoutUserOrder = async (req:AuthRequest, res:Response)=>{
 export const checkoutNonUserOrder = async (req:Request, res:Response)=>{
     try{
         const {id} = req.params
-        const {email, momoNumber, whatsapp, name, notes, password} = req.body
+        const {email, momoName, whatsapp, name, notes, password} = req.body
         const role:Role = process.env.USERROLE as Role
 
         const userExist = await findUserByEmail(email)
@@ -179,7 +179,7 @@ export const checkoutNonUserOrder = async (req:Request, res:Response)=>{
         delete (user as any).currencies
         delete (user as any).currencyUpdates
 
-        const order = await addOrderBillingNonUser(Number(id),name,email,whatsapp, momoNumber, user.id, savedOrder!.amount, notes )
+        const order = await addOrderBillingNonUser(Number(id),name,email,whatsapp, momoName, user.id, savedOrder!.amount, notes )
 
         res.send({
             order, message:"Order placed successfully",

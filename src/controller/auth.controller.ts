@@ -46,8 +46,8 @@ export const createUser = async (req:Request, res:Response)=>{
         res.send({
             user,
             backendTokens: {
-                accessToken: generateJWT(user.email, user.id,user.name, '1h'),
-                refreshToken: generateJWT(user.email, user.id,user.name, '7d')
+                accessToken: generateJWT(user.email, user.id, user.name, '1h'),
+                refreshToken: generateJWT(user.email, user.id, user.name, '7d')
             }
         })
 

@@ -17,7 +17,7 @@ declare module "jsonwebtoken" {
 export async function authenticateAdminToken(req:AuthRequest, res:Response, next:NextFunction) {
     try{
         const token = extractTokenFromHeader(req)
-        if(!token) return res.sendStatus(401).json({message: "Unauthorized"})   
+        if(!token) return res.status(401).json({message: "Unauthorized"})   
 
         const payload = <jwt.JwtPayload>jwt.verify(token, process.env.JWT_SECRET_KEY as string)
         
@@ -33,7 +33,7 @@ export async function authenticateAdminToken(req:AuthRequest, res:Response, next
         req.tokenAccount = payload
         next()
     }catch(e){
-        return res.sendStatus(403).json({message: "Unauthorized"})
+        return res.status(403).json({message: "Unauthorized"})
     }
 }
 

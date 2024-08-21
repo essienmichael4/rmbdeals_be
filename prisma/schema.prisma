@@ -25,6 +25,25 @@ enum Status{
   COMPLETED
 }
 
+enum Show{
+  TRUE
+  FALSE
+}
+
+model Announcement{
+  id Int @id @default(autoincrement())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title String?
+  subject String
+  show Show
+
+  updatedBy Int
+  user User @relation(fields: [updatedBy], references: [id])  
+}
+
 model Currency{
   id Int @id @default(autoincrement())
   currency String @unique
@@ -84,7 +103,7 @@ model OrderBilling{
   name String
   whatsapp String
   email String
-  momoNumber String
+  momoName String @default("Michael Essien")
   notes String
 
   orderId Int @unique
@@ -106,6 +125,7 @@ model User{
   currencyUpdates CurrencyUpdate[]
   currencies Currency[]
   orders Order[]
+  announcement Announcement[]
 }
 
 model MonthHistory{

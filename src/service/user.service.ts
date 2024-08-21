@@ -43,3 +43,12 @@ export const updatePassword = (id:number, hashedPassword:string) => {
         }
     })
 }
+
+export const updateCurrency = (id:number, currency:string) => {
+    return prisma.user.update({
+        where: {id},
+        data: {
+            currency
+        }
+    })
+}

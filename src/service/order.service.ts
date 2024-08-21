@@ -108,7 +108,7 @@ export const fetchUserOrderforCheckout = (id:number, userId?:number)=>{
     }})
 }
 
-export const addOrderBilling = (id:number, name:string, email:string, whatsapp:string, momoNumber:string, notes?:string, userId?:number) =>{
+export const addOrderBilling = (id:number, name:string, email:string, whatsapp:string, momoName:string, notes?:string, userId?:number) =>{
     return prisma.order.update({where: {
         id,
         userId
@@ -117,7 +117,7 @@ export const addOrderBilling = (id:number, name:string, email:string, whatsapp:s
             create: {
                 name,
                 whatsapp,
-                momoNumber,
+                momoName,
                 email,
                 notes: notes as string
             }
@@ -125,7 +125,7 @@ export const addOrderBilling = (id:number, name:string, email:string, whatsapp:s
     }})
 }
 
-export const addOrderBillingNonUser = (id:number, name:string, email:string, whatsapp:string, momoNumber:string, userId:number, amount:number, notes?:string) =>{
+export const addOrderBillingNonUser = (id:number, name:string, email:string, whatsapp:string, momoName:string, userId:number, amount:number, notes?:string) =>{
     return prisma.$transaction([
         prisma.order.update({
             where: {
@@ -136,7 +136,7 @@ export const addOrderBillingNonUser = (id:number, name:string, email:string, wha
                     create: {
                         name,
                         whatsapp,
-                        momoNumber,
+                        momoName,
                         email,
                         notes: notes as string
                     }
