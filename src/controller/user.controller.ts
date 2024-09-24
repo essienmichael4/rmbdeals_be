@@ -1,7 +1,7 @@
 import { Response } from "express";
 import bcrypt from 'bcrypt'
 import { AuthRequest } from "../types/authRequest.type";
-import { findUserByEmail, findUserById, updateCurrency, updatePassword, updateUserAccountInfo } from "../Service/user.service";
+import { findUserByEmail, findUserById, updateCurrency, updatePassword, updateUserAccountInfo } from "../service/user.service";
 import { generateJWT } from "../service/helpers";
 
 /**

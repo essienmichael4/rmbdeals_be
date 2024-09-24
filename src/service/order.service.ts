@@ -329,3 +329,14 @@ export const fetchOrdersRevenue = async (from?:Date, to?: Date) => {
         heldRevenue: await heldRevenue(from, to)
     }
 }
+
+export const autoUpdateOfOrders = async () => {
+    return prisma.order.updateMany({
+        where: {
+            status: "HELD"
+        },
+        data: {
+            status: "CANCELLED"
+        }
+    })
+}

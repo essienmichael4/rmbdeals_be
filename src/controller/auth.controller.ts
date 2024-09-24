@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import nodemailer from 'nodemailer';
-import { createNewUser, findUser, findUserByEmail, updatePassword } from "../Service/user.service";
+import { createNewUser, findUser, findUserByEmail, updatePassword } from "../service/user.service";
 import bcrypt from 'bcrypt'
 import { AuthRequest } from "../types/authRequest.type";
 import { Role } from "@prisma/client";
@@ -144,23 +144,32 @@ export const createAdmin = async (req:Request, res:Response)=>{
 
         const { to, subject, text } = {
             to: email,
-            subject: "Password Reset",
+            subject: "Password reset - RMBDEALS",
             text: `
-                Please reset your password to access your account using the link below.
+                Dear Sir / Madam,
+
+                You have requested to reset your password for your online account with RMBDEALS.
+
+                Please reset your password to access your account by clicking the link below (or paste it in your browser's address bar).
                 Link expires in 30 minutes.
 
                 ${link}
+
+                If you have not requested your passwordd to be reset or if you are having problems resseting your password, please contact our helpdesk at rmbdeals@gmail.com.
+
+                With kind regards,
+                RMBDEALS Team.
             `
         }
 
-        // const mailOptions = {
-        //     from: process.env.EMAIL_SENDER,
-        //     to,
-        //     subject,
-        //     text,
-        // };
+        const mailOptions = {
+            from: process.env.EMAIL_SENDER,
+            to,
+            subject,
+            text,
+        };
 
-        // await transporter.sendMail(mailOptions);
+        await transporter.sendMail(mailOptions);
     }catch(err:any){
         res.status(400).json(err)
     }
@@ -185,25 +194,34 @@ export const forgotPassword = async (req:Request, res:Response)=>{
         const link = `http://localhost:5000/rmbdeals/password-reset?id=${generateJWT(user.email, user.id, user.name, '30m')}&email=${user.email}`
         const { to, subject, text } = {
             to: user.email,
-            subject: "Password Reset",
+            subject: "Password reset - RMBDEALS",
             text: `
-                Please reset your password to access your account using the link below.
+                Dear Sir / Madam,
+
+                You have requested to reset your password for your online account with RMBDEALS.
+
+                Please reset your password to access your account by clicking the link below (or paste it in your browser's address bar).
                 Link expires in 30 minutes.
 
                 ${link}
+
+                If you have not requested your passwordd to be reset or if you are having problems resseting your password, please contact our helpdesk at rmbdeals@gmail.com.
+
+                With kind regards,
+                RMBDEALS Team.
             `
         }
-
-        // const mailOptions = {
-        //     from: process.env.EMAIL_SENDER,
-        //     to,
-        //     subject,
-        //     text,
-        // };
-
-        // await transporter.sendMail(mailOptions);
-
+        
         res.send({message: "Password reset request has been submittedd successfully. A link has been sent to the email account provided to reset your password."})
+        const mailOptions = {
+            from: process.env.EMAIL_SENDER,
+            to,
+            subject,
+            text,
+        };
+
+        await transporter.sendMail(mailOptions);
+
     }catch(err:any){
         res.status(400).json(err)
     }

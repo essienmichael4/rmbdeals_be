@@ -5,15 +5,15 @@ import path from "path";
 import { authenticateToken } from "../middleware/authToken.middleware";
 import { authenticateAdminToken } from "../middleware/authAdminToken";
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, './uploads')
-    },
-    filename: function (req, file, cb) {
-      cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`)
-    }
-})
-const upload = multer({ storage: storage })
+// const storage = multer.diskStorage({
+//     filename: function (req, file, cb) {
+//       cb(null, `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`)
+//     }
+// })
+// const upload = multer({ storage: storage })
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const router = Router()
 

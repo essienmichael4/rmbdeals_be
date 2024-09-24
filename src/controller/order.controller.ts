@@ -6,7 +6,10 @@ import { Role } from "@prisma/client";
 import { generateJWT } from "../service/helpers";
 import { getCurrency } from "../service/currency.service";
 import { addOrderBilling, addOrderBillingNonUser, checkoutLoginOrderUpdate, createOrderForUnknownUser, createOrderForUser, fetchOrdersRevenue, fetchUserOrder, fetchUserOrderforCheckout, fetchUserOrders, updateUserOrder } from "../service/order.service";
-import { createNewUser, findUserByEmail } from "../Service/user.service";
+import { createNewUser, findUserByEmail } from "../service/user.service";
+import axios from "axios";
+import FormData from 'form-data';
+import { getAccount } from "../service/account.service";
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -24,15 +27,26 @@ const transporter = nodemailer.createTransport({
  */
 export const createOrder = async (req:AuthRequest, res:Response)=>{
     try{
+        const file: Express.Multer.File | undefined = req.file;
         const data:{account: string, currency: string, amount: number, recipient:string} = JSON.parse(req.body.order)
         const user = req.tokenAccount
+
+        const form = new FormData();
+        form.append('image', file!.buffer.toString('base64'));
+        form.append('key', process.env.IMBDB_API_KEY);
+        form.append('expiration', 86400);
+        const response = await axios.post("https://api.imgbb.com/1/upload", form, {
+            headers: {
+                'content-type': 'multipart/form-data'
+            },
+        });
 
         const currencyInfo = await getCurrency(data.currency)
         if(!currencyInfo){
             return res.status(404).json({error: "The transacted currency was not found"})
         }
 
-        const result = await createOrderForUser(data.account, data.amount,currencyInfo.rate, data.recipient, data.currency, `${req.file?.filename}`, user!.dub.id) 
+        const result = await createOrderForUser(data.account, data.amount,currencyInfo.rate, data.recipient, data.currency, response.data?.data?.url, user!.dub.id) 
         const order = result[0]
         res.send({order, message: "Order saved successfully"})
 
@@ -49,18 +63,33 @@ export const createOrder = async (req:AuthRequest, res:Response)=>{
  */
 export const createUnkownOrder = async (req:Request, res:Response)=>{
     try{
+        const file: Express.Multer.File | undefined = req.file;
+        // console.log('Uploaded File:', file);
+
         const data:{account: string, currency: string, amount: number, recipient:string} = JSON.parse(req.body.order)
+
+        const form = new FormData();
+        form.append('image', file!.buffer.toString('base64'));
+        form.append('key', process.env.IMBDB_API_KEY);
+        form.append('expiration', 86400);
+        const response = await axios.post("https://api.imgbb.com/1/upload", form, {
+            headers: {
+                'content-type': 'multipart/form-data'
+            },
+        });
 
         const currencyInfo = await getCurrency(data.currency)
         if(!currencyInfo){
             return res.status(404).json({error: "The transacted currency was not found"})
         }
 
-        const order = await createOrderForUnknownUser(data.account, data.amount,currencyInfo.rate, data.recipient, data.currency, `uploads/${req.file?.filename}`) 
+        const order = await createOrderForUnknownUser(data.account, data.amount,currencyInfo.rate, data.recipient, data.currency, response.data?.data?.url) 
         delete (order as any).userId
-       res.send({order, message: "Order saved successfully"})
+        res.send({order, message: "Order saved successfully"})
 
     }catch(err:any){
+        console.log(err);
+        
         res.status(400).json(err)
     }
 }
@@ -119,28 +148,33 @@ export const checkoutUserOrder = async (req:AuthRequest, res:Response)=>{
         const {id} = req.params
         const {email, momoName, whatsapp, name, notes} = req.body
         const user = req.tokenAccount
-
-        const order = await addOrderBilling(Number(id),name,email,whatsapp, momoName, notes, user?.dub.id)
-
+        
+        const order = await addOrderBilling(Number(id), name, email, whatsapp, momoName, notes, user?.dub.id)
+        delete (order as any).userId
+        
         res.send({order, message:"Order placed successfully"})
+        const account = await getAccount()
 
         const { to, subject, text } = {
             to: email,
-            subject: "Password Reset",
+            subject: "RMDDEALS - YOUR ORDER",
             text: `
-                Please reset your password to access your account using the link below.
-                Link expires in 30 minutes.
+                Your order with ID: ${order.id} for RMB ${order.rmbEquivalence} at ${order.currency}  ${order.amount} has been placed successfully.
+                Please make a payment of ${order.currency} ${order.amount} with refernce ${order.id} to the account: ${account!.number} with reference name: ${account!.name} to proceed with the order processing.
+                If no payment is made the order would be automatically cancelled at 12:00 am GMT.
+
+                Thank you.
             `
         }
 
-        // const mailOptions = {
-        //     from: process.env.EMAIL_SENDER,
-        //     to,
-        //     subject,
-        //     text,
-        // };
+        const mailOptions = {
+            from: process.env.EMAIL_SENDER,
+            to,
+            subject,
+            text,
+        };
 
-        // await transporter.sendMail(mailOptions);
+        await transporter.sendMail(mailOptions);
     }catch(err:any){
         if(err.meta.modelName === "Order"){
             res.status(404).json("No order record was found with the ID associated with this account")
@@ -180,9 +214,10 @@ export const checkoutNonUserOrder = async (req:Request, res:Response)=>{
         delete (user as any).currencyUpdates
 
         const order = await addOrderBillingNonUser(Number(id),name,email,whatsapp, momoName, user.id, savedOrder!.amount, notes )
+        delete (order[0] as any).userId
 
         res.send({
-            order, message:"Order placed successfully",
+            order: order[0], message:"Order placed successfully",
             user,
             backendTokens: {
                 accessToken: generateJWT(user.email, user.id,user.name, '1h'),
@@ -190,23 +225,28 @@ export const checkoutNonUserOrder = async (req:Request, res:Response)=>{
             }
         })
 
+        const account = await getAccount()
+
         const { to, subject, text } = {
             to: email,
-            subject: "Password Reset",
+            subject: "RMDDEALS - YOUR ORDER",
             text: `
-                Please reset your password to access your account using the link below.
-                Link expires in 30 minutes.
+                Your order with ID: ${order[0].id} for RMB ${order[0].rmbEquivalence} at ${order[0].currency}  ${order[0].amount} has been placed successfully.
+                Please make a payment of ${order[0].currency} ${order[0].amount} with refernce ${order[0].id} to the account: ${account!.number} with reference name: ${account!.name} to proceed with the order processing.
+                If no payment is made the order would be automatically cancelled at 12:00 am GMT.
+
+                Thank you.
             `
         }
 
-        // const mailOptions = {
-        //     from: process.env.EMAIL_SENDER,
-        //     to,
-        //     subject,
-        //     text,
-        // };
+        const mailOptions = {
+            from: process.env.EMAIL_SENDER,
+            to,
+            subject,
+            text,
+        };
 
-        // await transporter.sendMail(mailOptions);
+        await transporter.sendMail(mailOptions);
     }catch(err:any){
         if(err.meta.modelName === "Order"){
             res.status(404).json("No order record was found with the ID associated with this account")

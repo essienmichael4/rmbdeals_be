@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Show } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export const getAnnouncement = () => {
@@ -21,6 +21,18 @@ export const updateExistingAnnouncement = (userId:number, subject:string, title?
         data: {
             title,
             subject,
+            updatedBy: userId
+        },
+        where: {
+            id: 1
+        }
+    })
+}
+
+export const updateAnnouncementStatus = (userId:number, show:Show)=>{
+    return prisma.announcement.update({
+        data: {
+            show,
             updatedBy: userId
         },
         where: {

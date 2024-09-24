@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { createCurrency, getAllCurrencies, getCurrencyForUser, getSingleCurrency, updateExistingCurrency } from "../service/currency.service";
 import { AuthRequest } from "../types/authRequest.type";
-import { findUserById } from "../Service/user.service";
+import { findUserById } from "../service/user.service";
 
 /**
  * 

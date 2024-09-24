@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken"
 import { AuthRequest } from "../types/authRequest.type";
-import { findUserById } from "../Service/user.service";
+import { findUserById } from "../service/user.service";
 
 declare module "jsonwebtoken" {
     export interface JwtPayload {
